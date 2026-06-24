@@ -14,9 +14,11 @@ MINIMAS_DB = {
     },
     "Mujer": {
         "100m": {"Absoluto": 11.80, "Sub23": 12.10, "Sub20": 12.30, "Sub18": 12.30, "Sub16": 12.55, "F35": 13.08, "F40": 13.49, "F45": 13.76, "F50": 13.98, "F55": 14.67, "F60": 15.10},
-        "200m": {"Absoluto": 24.25, "Sub23": 25.00, "Sub20": 25.25, "Sub18": 25.25, "F35": 26.42, "F40": 27.95, "F45": 28.56, "F50": 28.60, "F55":
-}
+        # He cerrado la línea de 200m añadiendo tiempos ficticios para F55 y F60. 
+        # ¡Asegúrate de poner las mínimas reales!
+        "200m": {"Absoluto": 24.25, "Sub23": 25.00, "Sub20": 25.25, "Sub18": 25.25, "F35": 26.42, "F40": 27.95, "F45": 28.56, "F50": 28.60, "F55": 29.50, "F60": 30.50}
     }
+}
 
 def obtener_coeficiente(distancia, genero):
     # Nota: El viento afecta menos al 400m por la curva, se usa un coeficiente reducido
@@ -38,17 +40,17 @@ with col2:
     genero = st.radio("Género:", ["Hombre", "Mujer"], horizontal=True)
 
 # Selector de categoría dinámico
-cat_lista = ["Absoluto", "Sub23", "Sub20", "Sub18", "Sub16", "M35", "M40", "M45"]
+cat_lista = ["Absoluto", "Sub23", "Sub20", "Sub18", "Sub16", "M35", "M40", "M45", "M50", "M55", "M60", "F35", "F40", "F45", "F50", "F55", "F60"]
 categoria_elegida = st.selectbox("Categoría:", cat_lista)
 
 if st.button("🚀 Calcular"):
     coef = obtener_coeficiente(distancia, genero)
     t_neutral = tiempo_real + (viento * coef)
-    
+   
     st.write(f"### Tiempo neutral: **{t_neutral:.2f}s**")
-    
-    # Lógica de Mínimas
-    if categoria_elegida in MINIMAS_DB[genero][distancia]:
+   
+    # Lógica de Mínimas con protección por si la distancia no está en la base de datos
+    if distancia in MINIMAS_DB[genero] and categoria_elegida in MINIMAS_DB[genero][distancia]:
         minima = MINIMAS_DB[genero][distancia][categoria_elegida]
         diff = t_neutral - minima
         if diff <= 0:
@@ -56,7 +58,7 @@ if st.button("🚀 Calcular"):
         else:
             st.warning(f"🎯 Estás a {diff:.2f}s de la mínima de {minima:.2f}s")
     else:
-        st.error("Prueba no disponible para esta categoría.")
+        st.error("Prueba o categoría no disponible en la base de datos.")
 
     st.subheader("🔮 Potencial (Rango Estimado)")
     st.info("El rango muestra tu proyección según si eres un atleta más veloz o más resistente.")
