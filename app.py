@@ -96,4 +96,12 @@ if st.button("🚀 Calcular"):
         r_400_min = t_neutral * 2.14
         r_400_max = t_neutral * 2.20
         with col_res1:
-            st.metric(label="Proyección 100m", value=f"{r_100_min:.2f} - {r_1
+            st.metric(label="Proyección 100m", value=f"{r_100_min:.2f} - {r_100_max:.2f}s")
+        with col_res2:
+            st.metric(label="Proyección 400m", value=f"{r_400_min:.2f} - {r_400_max:.2f}s")
+
+    elif distancia == "400m":
+        r_200_min = t_neutral / 2.20
+        r_200_max = t_neutral / 2.14
+        with col_res1:
+            st.metric(label="Proyección 200m", value=f"{r_200_min:.2f} - {r_200_max:.2f}s")
