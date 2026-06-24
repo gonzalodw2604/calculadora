@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Configuración de la pestaña del navegador
-st.set_page_config(page_title="Calculadora de Viento PRO", page_icon="🏃‍♂️", layout="centered")
+st.set_page_config(page_title="Calculadora de Viento y Mínimas de España", page_icon="🏃‍♂️", layout="centered")
 
 # Base de datos interna con marcas mínimas oficiales de referencia (RFEA aproximadas PC/AL)
 # ¡Actualizada con categorías Máster de 35 a 55 años!
