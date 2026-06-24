@@ -50,7 +50,7 @@ with tab1:
         viento = st.number_input("Viento medido (m/s):", value=None, step=0.1, placeholder="Ej: +2.3 o -1.5", key="ind_wind")
         genero = st.radio("Género del atleta:", ["Hombre", "Mujer"], index=None, horizontal=True, key="ind_gen")
 
-    # NUEVO SELECTOR: Elección de categoría/campeonato objetivo
+    # SELECTOR: Elección de categoría/campeonato objetivo
     categoria_elegida = st.selectbox("🏆 Selecciona tu categoría (Campeonato de España):", ["Absoluto", "Sub23", "Sub20", "Sub18", "Sub16"], index=None, placeholder="Elige tu campeonato destino...")
 
     # Botón de ejecución
@@ -77,17 +77,16 @@ with tab1:
             
             st.markdown("---")
 
-            # 2. MODIFICADO: El Cazador de Mínimas enfocado en TU Campeonato elegido
+            # 2. El Cazador de Mínimas enfocado en TU Campeonato elegido
             st.subheader(f"🎖️ Objetivo: Campeonato de España {categoria_elegida}")
             
             texto_minimas_wa = ""
-            # Verificar si existe la mínima para esa combinación (ej. Sub16 no corre 200m oficiales en RFEA)
             if categoria_elegida in MINIMAS_DB[genero][distancia]:
                 marca_minima = MINIMAS_DB[genero][distancia][categoria_elegida]
                 
                 if tiempo_neutral <= marca_minima:
                     diferencia = marca_minima - tiempo_neutral
-                    st.balloons() # Animación de fiesta
+                    st.balloons()
                     if diferencia == 0:
                         st.success(f"🔥 ¡MÍNIMA CLAVADA! Has hecho exactamente los **{marca_minima:.2f}s** exigidos. ¡Estás dentro del Campeonato de España!")
                         texto_minimas_wa = f"✅ ¡MÍNIMA CLAVADA para el España {categoria_elegida}! ({marca_minima:.2f}s)"
@@ -127,7 +126,7 @@ with tab1:
                 proyecciones_rango["100m"] = (tiempo_neutral / f_min_100, tiempo_neutral / f_max_100)
                 proyecciones_rango["60m"] = (tiempo_neutral / f_min_60, tiempo_neutral / f_max_60)
                 
-            # Mostrar las proyecciones en columnas con el formato de rango
+            # Mostrar las proyecciones
             p_cols = st.columns(len(proyecciones_rango))
             for idx, (dist, (t_min, t_max)) in enumerate(proyecciones_rango.items()):
                 p_cols[idx].metric(
@@ -158,11 +157,10 @@ with tab1:
             
             st.markdown("---")
             
-            # 5. Cuadro "Copiar para WhatsApp" actualizado
+            # 5. Cuadro "Copiar para WhatsApp"
             st.subheader("📱 Compartir con el Equipo")
             st.write("Haz clic en el botón de copiar (icono de dos cuadraditos) para pegarlo en WhatsApp:")
             
-            # Generar bloque de texto dinámico de proyecciones
             texto_proyecciones_wa = ""
             for dist, (t_min, t_max) in proyecciones_rango.items():
                 texto_proyecciones_wa += f"🎯 *Rango {dist}:* {t_min:.2f}s a {t_max:.2f}s\n"
@@ -196,7 +194,8 @@ with tab2:
         st.markdown("### 🏃‍♂️ Atleta 1")
         nom1 = st.text_input("Nombre Atleta 1:", value="Atleta A")
         t1 = st.number_input("Tiempo registrado (s):", value=None, min_value=0.0, step=0.01, placeholder="Ej: 10.95", key="t1")
-        v1 = m/s = st.number_input("Viento medido (m/s):", value=None, step=0.1, placeholder="Ej: +1.5", key="v1")
+        # ¡ERROR CORREGIDO AQUÍ!
+        v1 = st.number_input("Viento medido (m/s):", value=None, step=0.1, placeholder="Ej: +1.5", key="v1")
         g1 = st.radio("Género Atleta 1:", ["Hombre", "Mujer"], index=0, key="g1", horizontal=True)
         
     with col_at2:
