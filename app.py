@@ -4,10 +4,6 @@ import pandas as pd
 # Configuración de la pestaña del navegador
 st.set_page_config(page_title="Calculadora de Viento PRO", page_icon="🏃‍♂️", layout="centered")
 
-# Inicializar el historial en la memoria de la sesión si no existe (Idea 4)
-if "historial" not in st.session_state:
-    st.session_state.historial = []
-
 # Función interna para obtener el coeficiente según tus reglas
 def obtener_coeficiente(distancia, genero):
     if distancia == "60m":
@@ -22,8 +18,8 @@ def obtener_coeficiente(distancia, genero):
 st.title("🏃‍♂️ Calculadora de Viento Neutral PRO 🏃‍♀️")
 st.write("La herramienta definitiva para el análisis de marcas de velocidad sin influencia del viento.")
 
-# --- CREACIÓN DE LAS PESTAÑAS (Organización Limpia) ---
-tab1, tab2, tab3 = st.tabs(["📊 Cálculo Individual & Simulador", "⚔️ Duelo Virtual (Cara a Cara)", "📜 Historial del Equipo"])
+# --- CREACIÓN DE LAS PESTAÑAS (Ahora solo 2) ---
+tab1, tab2 = st.tabs(["📊 Cálculo Individual & Simulador", "⚔️ Duelo Virtual (Cara a Cara)"])
 
 # ==========================================
 # PESTAÑA 1: CÁLCULO INDIVIDUAL + SIMULACIÓN + SEMÁFORO + WHATSAPP
@@ -50,7 +46,7 @@ with tab1:
             
             st.markdown("---")
             
-            # 1. Idea: Semáforo de "Marca Legal"
+            # Idea: Semáforo de "Marca Legal"
             st.subheader("🚦 Homologación de la Marca")
             if viento > 2.0:
                 st.warning(f"🟠 **Marca No Homologable:** El viento a favor ({viento:+} m/s) supera el límite legal reglamentario de +2.0 m/s.")
@@ -62,19 +58,9 @@ with tab1:
             # Resultado Principal
             st.markdown(f"### ⏱️ Tu tiempo con viento neutral (0.0) sería: **{tiempo_neutral:.2f}s**")
             
-            # Guardar automáticamente en el Historial (Idea 4)
-            st.session_state.historial.append({
-                "Prueba": distancia,
-                "Género": genero,
-                "T. Real": f"{tiempo_real:.2f}s",
-                "Viento": f"{viento:+} m/s",
-                "T. Neutral": f"{tiempo_neutral:.2f}s",
-                "Estado": estado_legal
-            })
-            
             st.markdown("---")
             
-            # 2. Idea: Tabla de Simulación Automática
+            # Idea: Tabla de Simulación Automática
             st.subheader("📊 Tabla de Simulación de Vientos")
             st.write("Esto es lo que habrías registrado hoy si las condiciones climáticas hubieran sido diferentes:")
             
@@ -94,7 +80,7 @@ with tab1:
             
             st.markdown("---")
             
-            # 3. Idea: Cuadro "Copiar para WhatsApp"
+            # Idea: Cuadro "Copiar para WhatsApp"
             st.subheader("📱 Compartir con el Equipo")
             st.write("Haz clic en el botón de copiar (icono de dos cuadraditos arriba a la derecha del recuadro gris) para pegarlo en WhatsApp:")
             
@@ -155,22 +141,3 @@ with tab2:
             else:
                 diferencia = n1 - n2
                 st.success(f"👑 **¡Ganador Virtual: {nom2}!** Corriendo sin la influencia del viento, habría aventajado a {nom1} por **{diferencia:.2f}s**.")
-
-
-# ==========================================
-# PESTAÑA 3: HISTORIAL DE LA SESIÓN (TABLA ACUMULADA)
-# ==========================================
-with tab3:
-    st.header("📜 Registro de Cálculos del Día")
-    st.write("Aquí se irán sumando todas las marcas que calcules en la primera pestaña mientras no recargues la página.")
-    
-    if len(st.session_state.historial) > 0:
-        # Convertir la lista guardada en una tabla visual bonita de Pandas
-        df_historial = pd.DataFrame(st.session_state.historial)
-        st.dataframe(df_historial, use_container_width=True, hide_index=True)
-        
-        if st.button("🗑️ Borrar Historial de la Sesión"):
-            st.session_state.historial = []
-            st.rerun()
-    else:
-        st.info("Aún no has hecho ningún cálculo individual hoy. ¡Ve a la primera pestaña y haz tu primera prueba!")
