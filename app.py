@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import urllib.parse # Necesario para codificar el mensaje de WhatsApp
 
 # Configuración de la página
 st.set_page_config(page_title="Calculadora de Viento PRO", page_icon="🏃‍♂️", layout="centered")
@@ -51,16 +52,27 @@ if st.button("🚀 Calcular"):
         
         st.write(f"### Tiempo neutral: **{t_neutral:.2f}s**")
         
+        # Preparar la primera parte del mensaje para WhatsApp
+        mensaje_wa = f"🏃‍♂️ ¡Acabo de calcular mi marca!\n📏 Prueba: {distancia}\n⏱️ Tiempo: {tiempo_real}s (Viento: {viento} m/s)\n🌪️ Tiempo neutral: {t_neutral:.2f}s\n"
+        
         # Lógica de Mínimas con protección por si la distancia no está en la base de datos
         if distancia in MINIMAS_DB[genero] and categoria_elegida in MINIMAS_DB[genero][distancia]:
             minima = MINIMAS_DB[genero][distancia][categoria_elegida]
             diff = t_neutral - minima
             if diff <= 0:
                 st.success(f"🎉 ¡Mínima conseguida para la categoría {categoria_elegida}! (Te sobran {abs(diff):.2f}s)")
+                mensaje_wa += f"🏆 ¡Mínima conseguida para {categoria_elegida}! 🎉\n"
             else:
                 st.warning(f"🎯 Estás a {diff:.2f}s de la mínima de {minima:.2f}s")
+                mensaje_wa += f"🎯 A {diff:.2f}s de la mínima ({categoria_elegida})\n"
         else:
             st.error("Prueba o categoría no disponible en la base de datos para este género.")
+        
+        # Crear enlace y botón de WhatsApp
+        url_wa = f"https://wa.me/?text={urllib.parse.quote(mensaje_wa)}"
+        st.link_button("📲 Compartir resultado en WhatsApp", url_wa)
+
+        st.divider()
 
         # Lógica de rangos / proyecciones
         st.subheader("🔮 Potencial (Rango Estimado)")
