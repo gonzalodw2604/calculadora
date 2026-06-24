@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
-import urllib.parse # Necesario para codificar el mensaje de WhatsApp
+import urllib.parse
 
 # Configuración de la página
 st.set_page_config(page_title="Calculadora de Viento PRO", page_icon="🏃‍♂️", layout="centered")
 
-# Base de datos 2026 actualizada con imagen oficial (M35-M60, F35-F60 y nuevas Sub23)
+# Base de datos 2026 actualizada con 400m y categorías Master + Sub23
 MINIMAS_DB = {
     "Hombre": {
         "100m": {"Absoluto": 10.55, "Sub23": 10.75, "Sub20": 10.90, "Sub18": 11.10, "Sub16": 11.50, "M35": 11.31, "M40": 11.70, "M45": 11.85, "M50": 12.04, "M55": 12.42, "M60": 12.93},
@@ -44,76 +44,56 @@ cat_lista = ["Absoluto", "Sub23", "Sub20", "Sub18", "Sub16", "M35", "M40", "M45"
 categoria_elegida = st.selectbox("Categoría:", cat_lista)
 
 if st.button("🚀 Calcular"):
-    if tiempo_real > 0:
-        coef = obtener_coeficiente(distancia, genero)
-        
-        # El tiempo neutral es el tiempo corregido quitando el efecto del viento
-        t_neutral = tiempo_real + (viento * coef)
-        
-        st.write(f"### Tiempo neutral: **{t_neutral:.2f}s**")
-        
-        # Preparar la primera parte del mensaje para WhatsApp
-        mensaje_wa = f"🏃‍♂️ ¡Acabo de calcular mi marca!\n📏 Prueba: {distancia}\n⏱️ Tiempo: {tiempo_real}s (Viento: {viento} m/s)\n🌪️ Tiempo neutral: {t_neutral:.2f}s\n"
-        
-        # Lógica de Mínimas con protección por si la distancia no está en la base de datos
-        if distancia in MINIMAS_DB[genero] and categoria_elegida in MINIMAS_DB[genero][distancia]:
-            minima = MINIMAS_DB[genero][distancia][categoria_elegida]
-            diff = t_neutral - minima
-            if diff <= 0:
-                st.success(f"🎉 ¡Mínima conseguida para la categoría {categoria_elegida}! (Te sobran {abs(diff):.2f}s)")
-                mensaje_wa += f"🏆 ¡Mínima conseguida para {categoria_elegida}! 🎉\n"
-            else:
-                st.warning(f"🎯 Estás a {diff:.2f}s de la mínima de {minima:.2f}s")
-                mensaje_wa += f"🎯 A {diff:.2f}s de la mínima ({categoria_elegida})\n"
+    coef = obtener_coeficiente(distancia, genero)
+    t_neutral = tiempo_real + (viento * coef)
+    
+    st.write(f"### Tiempo neutral: **{t_neutral:.2f}s**")
+    
+    # Preparamos el inicio del mensaje para WhatsApp
+    mensaje_wa = f"🏃‍♂️ ¡Acabo de calcular mi marca!\n📏 Prueba: {distancia}\n⏱️ Tiempo: {tiempo_real}s (Viento: {viento} m/s)\n🌪️ Tiempo neutral: {t_neutral:.2f}s\n"
+    
+    # Lógica de Mínimas con protección por si la distancia no está en la base de datos
+    if distancia in MINIMAS_DB[genero] and categoria_elegida in MINIMAS_DB[genero][distancia]:
+        minima = MINIMAS_DB[genero][distancia][categoria_elegida]
+        diff = t_neutral - minima
+        if diff <= 0:
+            st.success(f"🎉 ¡Mínima conseguida para el {categoria_elegida}! (Te sobran {abs(diff):.2f}s)")
+            mensaje_wa += f"🏆 ¡Mínima conseguida para {categoria_elegida}! 🎉"
         else:
-            st.error("Prueba o categoría no disponible en la base de datos para este género.")
-        
-        # Crear enlace y botón de WhatsApp
-        url_wa = f"https://wa.me/?text={urllib.parse.quote(mensaje_wa)}"
-        st.link_button("📲 Compartir resultado en WhatsApp", url_wa)
-
-        st.divider()
-
-        # Lógica de rangos / proyecciones
-        st.subheader("🔮 Potencial (Rango Estimado)")
-        st.info("El rango muestra tu proyección según si eres un atleta más veloz (explosivo) o más resistente.")
-        
-        col_res1, col_res2 = st.columns(2)
-        
-        if distancia == "60m":
-            # Proyección a 100m (aprox x1.53 para explosivos, x1.56 para menos veloces al final)
-            r_100_min = t_neutral * 1.53
-            r_100_max = t_neutral * 1.56
-            with col_res1:
-                st.metric(label="Proyección 100m", value=f"{r_100_min:.2f} - {r_100_max:.2f}s")
-
-        elif distancia == "100m":
-            # Proyección a 60m y 200m
-            r_60_min = t_neutral / 1.56
-            r_60_max = t_neutral / 1.53
-            r_200_min = (t_neutral * 2) - 0.2
-            r_200_max = (t_neutral * 2) + 0.4
-            with col_res1:
-                st.metric(label="Proyección 60m", value=f"{r_60_min:.2f} - {r_60_max:.2f}s")
-            with col_res2:
-                st.metric(label="Proyección 200m", value=f"{r_200_min:.2f} - {r_200_max:.2f}s")
-
-        elif distancia == "200m":
-            # Proyección a 100m y 400m
-            r_100_min = (t_neutral - 0.4) / 2
-            r_100_max = (t_neutral + 0.2) / 2
-            r_400_min = t_neutral * 2.14
-            r_400_max = t_neutral * 2.20
-            with col_res1:
-                st.metric(label="Proyección 100m", value=f"{r_100_min:.2f} - {r_100_max:.2f}s")
-            with col_res2:
-                st.metric(label="Proyección 400m", value=f"{r_400_min:.2f} - {r_400_max:.2f}s")
-
-        elif distancia == "400m":
-            # Proyección a 200m
-            r_200_min = t_neutral / 2.20
-            r_200_max = t_neutral / 2.14
-            with col_res1:
-                st.metric(label="Proyección 200m", value=f"{r_200_min:.2f} - {r_200_max:.2f}s")
+            st.warning(f"🎯 Estás a {diff:.2f}s de la mínima de {minima:.2f}s")
+            mensaje_wa += f"🎯 A {diff:.2f}s de la mínima ({categoria_elegida})"
     else:
-        st.warning("Introduce un tiempo válido mayor a 0.")
+        st.error("Prueba o categoría no disponible en la base de datos.")
+
+    # Inyectamos el botón de WhatsApp justo debajo de los resultados
+    url_wa = f"https://wa.me/?text={urllib.parse.quote(mensaje_wa)}"
+    st.link_button("📲 Compartir por WhatsApp", url_wa)
+
+    st.subheader("🔮 Potencial (Rango Estimado)")
+    st.info("El rango muestra tu proyección según si eres un atleta más veloz o más resistente.")
+    
+    col_res1, col_res2 = st.columns(2)
+    
+    if distancia == "60m":
+        r_100_min = t_neutral * 1.53
+        r_100_max = t_neutral * 1.56
+        with col_res1:
+            st.metric(label="Proyección 100m", value=f"{r_100_min:.2f} - {r_100_max:.2f}s")
+
+    elif distancia == "100m":
+        r_60_min = t_neutral / 1.56
+        r_60_max = t_neutral / 1.53
+        r_200_min = (t_neutral * 2) - 0.2
+        r_200_max = (t_neutral * 2) + 0.4
+        with col_res1:
+            st.metric(label="Proyección 60m", value=f"{r_60_min:.2f} - {r_60_max:.2f}s")
+        with col_res2:
+            st.metric(label="Proyección 200m", value=f"{r_200_min:.2f} - {r_200_max:.2f}s")
+
+    elif distancia == "200m":
+        r_100_min = (t_neutral - 0.4) / 2
+        r_100_max = (t_neutral + 0.2) / 2
+        r_400_min = t_neutral * 2.14
+        r_400_max = t_neutral * 2.20
+        with col_res1:
+            st.metric(label="Proyección 100m", value=f"{r_100_min:.2f} - {r_1
