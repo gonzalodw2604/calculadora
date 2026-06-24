@@ -15,11 +15,11 @@ def obtener_coeficiente(distancia, genero):
     return 0.0
 
 # Títulos principales de la web
-st.title("🏃‍♂️ Calculadora de Viento Neutral PRO 🏃‍♀️")
+st.title("🏃‍♂️ Calculadora de Viento Neutral para The Balas Team 🏃‍♀️")
 st.write("La herramienta definitiva para el análisis de marcas de velocidad sin influencia del viento.")
 
 # --- CREACIÓN DE LAS PESTAÑAS (Ahora solo 2) ---
-tab1, tab2 = st.tabs(["📊 Cálculo Individual & Simulador para The Balas Team", "⚔️ Duelo Virtual (Cara a Cara)"])
+tab1, tab2 = st.tabs(["📊 Cálculo Individual & Simulador", "⚔️ Duelo Virtual (Cara a Cara)"])
 
 # ==========================================
 # PESTAÑA 1: CÁLCULO INDIVIDUAL + SIMULACIÓN + SEMÁFORO + WHATSAPP
