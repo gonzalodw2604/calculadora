@@ -32,8 +32,8 @@ def obtener_coeficiente(distancia, genero):
     return 0.0
 
 # Títulos principales de la web
-st.title("🏃‍♂️ Calculadora de Viento Neutral para TheBalasTeam y Minimas Campeonato de España 🏃‍♀️")
-st.write("La herramienta definitiva para el análisis de marcas de velocidad sin influencia del viento.")
+st.title("🏃‍♂️ Calculadora de Viento Neutral para TheBalasTeam y Mínimas Campeonato de España 🏃‍♀️")
+st.write("La herramienta definitiva para el análisis de marcas de velocidad sin influencia del viento y saber si tienes la mínima del campeonato de España.")
 
 # --- CREACIÓN DE LAS PESTAÑAS ---
 tab1, tab2 = st.tabs(["📊 Cálculo Individual & Simulador", "⚔️ Duelo Virtual (Cara a Cara)"])
