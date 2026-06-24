@@ -29,14 +29,14 @@ def obtener_coeficiente(distancia, genero):
     return 0.0
 
 # Títulos principales de la web
-st.title("🏃‍♂️ Calculadora de Viento Neutral PRO 🏃‍♀️")
+st.title("🏃‍♂️ Calculadora de Viento Neutral para TheBalasTeam 🏃‍♀️")
 st.write("La herramienta definitiva para el análisis de marcas de velocidad sin influencia del viento.")
 
 # --- CREACIÓN DE LAS PESTAÑAS ---
 tab1, tab2 = st.tabs(["📊 Cálculo Individual & Simulador", "⚔️ Duelo Virtual (Cara a Cara)"])
 
 # ==========================================
-# PESTAÑA 1: CÁLCULO INDIVIDUAL + SEMÁFORO + MÍNIMAS + PROYECTOR EN RANGO + WHATSAPP
+# PESTAÑA 1: CÁLCULO INDIVIDUAL + SEMÁFORO + MÍNIMA PERSONALIZADA + PROYECTOR EN RANGO + WHATSAPP
 # ==========================================
 with tab1:
     st.header("⚡ Analizar una Marca")
@@ -50,10 +50,13 @@ with tab1:
         viento = st.number_input("Viento medido (m/s):", value=None, step=0.1, placeholder="Ej: +2.3 o -1.5", key="ind_wind")
         genero = st.radio("Género del atleta:", ["Hombre", "Mujer"], index=None, horizontal=True, key="ind_gen")
 
+    # NUEVO SELECTOR: Elección de categoría/campeonato objetivo
+    categoria_elegida = st.selectbox("🏆 Selecciona tu categoría (Campeonato de España):", ["Absoluto", "Sub23", "Sub20", "Sub18", "Sub16"], index=None, placeholder="Elige tu campeonato destino...")
+
     # Botón de ejecución
     if st.button("🚀 Calcular Rendimiento Completo", type="primary", key="btn_individual"):
-        if distancia is None or tiempo_real is None or viento is None or genero is None:
-            st.error("⚠️ Por favor, rellena todos los campos antes de calcular.")
+        if distancia is None or tiempo_real is None or viento is None or genero is None or categoria_elegida is None:
+            st.error("⚠️ Por favor, rellena todos los campos (incluyendo tu categoría) antes de calcular.")
         else:
             coef = obtener_coeficiente(distancia, genero)
             tiempo_neutral = tiempo_real + (viento * coef)
@@ -74,66 +77,53 @@ with tab1:
             
             st.markdown("---")
 
-            # 2. NUEVA FUNCIÓN: El Cazador de Mínimas Oficiales
-            st.subheader("🎖️ Cazador de Mínimas de España (RFEA)")
+            # 2. MODIFICADO: El Cazador de Mínimas enfocado en TU Campeonato elegido
+            st.subheader(f"🎖️ Objetivo: Campeonato de España {categoria_elegida}")
             
-            minimas_conseguidas = []
-            minimas_cercanas = []
-            
-            if genero in MINIMAS_DB and distancia in MINIMAS_DB[genero]:
-                for categoria, marca_minima in MINIMAS_DB[genero][distancia].items():
-                    if tiempo_neutral <= marca_minima:
-                        minimas_conseguidas.append(categoria)
+            texto_minimas_wa = ""
+            # Verificar si existe la mínima para esa combinación (ej. Sub16 no corre 200m oficiales en RFEA)
+            if categoria_elegida in MINIMAS_DB[genero][distancia]:
+                marca_minima = MINIMAS_DB[genero][distancia][categoria_elegida]
+                
+                if tiempo_neutral <= marca_minima:
+                    diferencia = marca_minima - tiempo_neutral
+                    st.balloons() # Animación de fiesta
+                    if diferencia == 0:
+                        st.success(f"🔥 ¡MÍNIMA CLAVADA! Has hecho exactamente los **{marca_minima:.2f}s** exigidos. ¡Estás dentro del Campeonato de España!")
+                        texto_minimas_wa = f"✅ ¡MÍNIMA CLAVADA para el España {categoria_elegida}! ({marca_minima:.2f}s)"
                     else:
-                        diferencia = tiempo_neutral - marca_minima
-                        # Si está a menos de 0.60 segundos, la mostramos como "cercana" para motivar
-                        if diferencia < 0.60:
-                            minimas_cercanas.append((categoria, diferencia, marca_minima))
-            
-            # Mostrar resultados de mínimas de forma muy visual
-            if minimas_conseguidas:
-                conseguidas_texto = ", ".join([f"**{c}**" for c in minimas_conseguidas])
-                st.balloons()
-                st.success(f"🎉 ¡TIENES LA MÍNIMA! Tu tiempo limpio te clasifica para el Campeonato de España en: {conseguidas_texto}")
+                        st.success(f"🎉 ¡TIENES LA MÍNIMA! Tu tiempo limpio ({tiempo_neutral:.2f}s) rebaja la mínima ({marca_minima:.2f}s) por **{diferencia:.2f}s**. ¡A preparar las maletas!")
+                        texto_minimas_wa = f"✅ ¡Mínima conseguida para el España {categoria_elegida}! (Te han sobrado {diferencia:.2f}s)"
+                else:
+                    diferencia = tiempo_neutral - marca_minima
+                    st.warning(f"🎯 Te has quedado a tan solo **{diferencia:.2f}s** de la mínima exigida ({marca_minima:.2f}s). ¡Está cerquísima, en la próxima carrera cae seguro!")
+                    texto_minimas_wa = f"🚀 Rozando la mínima {categoria_elegida} (a sólo {diferencia:.2f}s de los {marca_minima:.2f}s)"
             else:
-                st.info("🏃‍♂️ Sigue entrenando duro, aún no alcanzas la mínima para campeonatos nacionales con esta marca.")
-            
-            if minimas_cercanas:
-                st.write("**🎯 Objetivos a tiro (Mínimas más cercanas):**")
-                for cat, dif, m_min in sorted(minimas_cercanas, key=lambda x: x[1]):
-                    st.write(f"• A tan solo **{dif:.2f}s** de la mínima **{cat}** ({m_min:.2f}s).")
+                st.info(f"ℹ️ Curiosidad: La RFEA no contempla la distancia de {distancia} para el Campeonato de España {categoria_elegida} (ej: los Sub16 corren 300m en vez de 200m).")
+                texto_minimas_wa = f"ℹ️ Sin prueba oficial de {distancia} en {categoria_elegida}"
 
             st.markdown("---")
             
-            # 3. NUEVA FUNCIÓN OPTIMIZADA: Proyector de Marcas Avanzado (En Rango)
+            # 3. Proyector de Marcas Avanzado (En Rango)
             st.subheader("🎯 Proyector de Marcas (Tu Ventana de Potencial)")
             st.write("Dependiendo de si eres un atleta más *Explosivo* (mejor salida) o más *Resistente* (mejor final), tu potencial estimado se encuentra en estos rangos:")
             
             proyecciones_rango = {}
             if distancia == "60m":
-                # Proyección a 100m
                 f_min_100, f_max_100 = (1.50, 1.57) if genero == "Hombre" else (1.51, 1.58)
-                # Proyección a 200m
                 f_min_200, f_max_200 = (2.95, 3.20) if genero == "Hombre" else (3.00, 3.25)
-                
                 proyecciones_rango["100m"] = (tiempo_neutral * f_min_100, tiempo_neutral * f_max_100)
                 proyecciones_rango["200m"] = (tiempo_neutral * f_min_200, tiempo_neutral * f_max_200)
                 
             elif distancia == "100m":
-                # Proyección a 60m
                 f_min_60, f_max_60 = (1.57, 1.50) if genero == "Hombre" else (1.58, 1.51)
-                # Proyección a 200m
                 f_min_200, f_max_200 = (1.96, 2.06) if genero == "Hombre" else (1.98, 2.08)
-                
                 proyecciones_rango["60m"] = (tiempo_neutral / f_min_60, tiempo_neutral / f_max_60)
                 proyecciones_rango["200m"] = (tiempo_neutral * f_min_200, tiempo_neutral * f_max_200)
                 
             elif distancia == "200m":
-                # Proyección a 100m
                 f_min_100, f_max_100 = (2.06, 1.96) if genero == "Hombre" else (2.08, 1.98)
-                # Proyección a 60m
                 f_min_60, f_max_60 = (3.20, 2.95) if genero == "Hombre" else (3.25, 3.00)
-                
                 proyecciones_rango["100m"] = (tiempo_neutral / f_min_100, tiempo_neutral / f_max_100)
                 proyecciones_rango["60m"] = (tiempo_neutral / f_min_60, tiempo_neutral / f_max_60)
                 
@@ -143,7 +133,7 @@ with tab1:
                 p_cols[idx].metric(
                     label=f"Rango Estimado en {dist}", 
                     value=f"{t_min:.2f}s - {t_max:.2f}s",
-                    help="El tiempo más rápido corresponde a un perfil optimizado para la distancia; el más lento a uno menos adaptado."
+                    help="El tiempo rápido simula un perfil resistente; el lento un perfil explosivo."
                 )
                 
             st.markdown("---")
@@ -168,22 +158,14 @@ with tab1:
             
             st.markdown("---")
             
-            # 5. Cuadro "Copiar para WhatsApp" con Rangos y Mínimas
+            # 5. Cuadro "Copiar para WhatsApp" actualizado
             st.subheader("📱 Compartir con el Equipo")
             st.write("Haz clic en el botón de copiar (icono de dos cuadraditos) para pegarlo en WhatsApp:")
             
-            # Generar bloque de texto dinámico para WhatsApp de proyecciones en rango
+            # Generar bloque de texto dinámico de proyecciones
             texto_proyecciones_wa = ""
             for dist, (t_min, t_max) in proyecciones_rango.items():
                 texto_proyecciones_wa += f"🎯 *Rango {dist}:* {t_min:.2f}s a {t_max:.2f}s\n"
-            
-            # Generar bloque de texto dinámico de mínimas
-            texto_minimas_wa = "❌ Ninguna actualmente"
-            if minimas_conseguidas:
-                texto_minimas_wa = "✅ " + ", ".join(minimas_conseguidas)
-            elif minimas_cercanas:
-                mas_cercana = sorted(minimas_cercanas, key=lambda x: x[1])[0]
-                texto_minimas_wa = f"🚀 Rozando {mas_cercana[0]} (a {mas_cercana[1]:.2f}s)"
 
             texto_whatsapp = (
                 f"🏃‍♂️ *¡Resultado de la Calculadora de Viento!*\n"
@@ -191,7 +173,7 @@ with tab1:
                 f"⏱️ *Tiempo Real:* {tiempo_real:.2f}s (Viento: {viento:+} m/s)\n"
                 f"✨ *Tiempo Neutral (0.0):* {tiempo_neutral:.2f}s\n"
                 f"🚦 *Estado:* {estado_legal}\n\n"
-                f"🎖️ *Mínimas de España RFEA:*\n"
+                f"🏆 *Estatus de Mínima:*\n"
                 f"{texto_minimas_wa}\n\n"
                 f"🔮 *Ventana de Potencial Estimado:*\n"
                 f"{texto_proyecciones_wa}"
@@ -214,7 +196,7 @@ with tab2:
         st.markdown("### 🏃‍♂️ Atleta 1")
         nom1 = st.text_input("Nombre Atleta 1:", value="Atleta A")
         t1 = st.number_input("Tiempo registrado (s):", value=None, min_value=0.0, step=0.01, placeholder="Ej: 10.95", key="t1")
-        v1 = st.number_input("Viento medido (m/s):", value=None, step=0.1, placeholder="Ej: +1.5", key="v1")
+        v1 = m/s = st.number_input("Viento medido (m/s):", value=None, step=0.1, placeholder="Ej: +1.5", key="v1")
         g1 = st.radio("Género Atleta 1:", ["Hombre", "Mujer"], index=0, key="g1", horizontal=True)
         
     with col_at2:
