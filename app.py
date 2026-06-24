@@ -4,6 +4,20 @@ import pandas as pd
 # Configuración de la pestaña del navegador
 st.set_page_config(page_title="Calculadora de Viento PRO", page_icon="🏃‍♂️", layout="centered")
 
+# Base de datos interna con marcas mínimas oficiales de referencia (RFEA aproximadas PC/AL)
+MINIMAS_DB = {
+    "Hombre": {
+        "60m": {"Absoluto": 6.85, "Sub23": 6.95, "Sub20": 7.05, "Sub18": 7.15, "Sub16": 7.35},
+        "100m": {"Absoluto": 10.65, "Sub23": 10.90, "Sub20": 11.15, "Sub18": 11.35, "Sub16": 11.60},
+        "200m": {"Absoluto": 21.60, "Sub23": 22.10, "Sub20": 22.55, "Sub18": 22.95}
+    },
+    "Mujer": {
+        "60m": {"Absoluto": 7.65, "Sub23": 7.85, "Sub20": 7.95, "Sub18": 8.05, "Sub16": 8.20},
+        "100m": {"Absoluto": 11.95, "Sub23": 12.30, "Sub20": 12.60, "Sub18": 12.75, "Sub16": 12.90},
+        "200m": {"Absoluto": 24.45, "Sub23": 25.30, "Sub20": 25.80, "Sub18": 26.30}
+    }
+}
+
 # Función interna para obtener el coeficiente según tus reglas
 def obtener_coeficiente(distancia, genero):
     if distancia == "60m":
@@ -15,14 +29,14 @@ def obtener_coeficiente(distancia, genero):
     return 0.0
 
 # Títulos principales de la web
-st.title("🏃‍♂️ Calculadora de Viento Neutral para TheBalasTeam 🏃‍♀️")
+st.title("🏃‍♂️ Calculadora de Viento Neutral PRO 🏃‍♀️")
 st.write("La herramienta definitiva para el análisis de marcas de velocidad sin influencia del viento.")
 
 # --- CREACIÓN DE LAS PESTAÑAS ---
 tab1, tab2 = st.tabs(["📊 Cálculo Individual & Simulador", "⚔️ Duelo Virtual (Cara a Cara)"])
 
 # ==========================================
-# PESTAÑA 1: CÁLCULO INDIVIDUAL + SEMÁFORO + SIMULADOR + PROYECTOR + WHATSAPP
+# PESTAÑA 1: CÁLCULO INDIVIDUAL + SEMÁFORO + MÍNIMAS + PROYECTOR EN RANGO + WHATSAPP
 # ==========================================
 with tab1:
     st.header("⚡ Analizar una Marca")
@@ -59,39 +73,82 @@ with tab1:
             st.markdown(f"### ⏱️ Tu tiempo con viento neutral (0.0) sería: **{tiempo_neutral:.2f}s**")
             
             st.markdown("---")
+
+            # 2. NUEVA FUNCIÓN: El Cazador de Mínimas Oficiales
+            st.subheader("🎖️ Cazador de Mínimas de España (RFEA)")
             
-            # 2. Proyector de Marcas Estimadas (Potencial)
-            st.subheader("🎯 Proyector de Marcas (Tu Potencial)")
-            st.write("Basado en tu tiempo neutralizado de hoy, este sería tu rendimiento estimado en las otras distancias:")
+            minimas_conseguidas = []
+            minimas_cercanas = []
             
-            proyecciones = {}
+            if genero in MINIMAS_DB and distancia in MINIMAS_DB[genero]:
+                for categoria, marca_minima in MINIMAS_DB[genero][distancia].items():
+                    if tiempo_neutral <= marca_minima:
+                        minimas_conseguidas.append(categoria)
+                    else:
+                        diferencia = tiempo_neutral - marca_minima
+                        # Si está a menos de 0.60 segundos, la mostramos como "cercana" para motivar
+                        if diferencia < 0.60:
+                            minimas_cercanas.append((categoria, diferencia, marca_minima))
+            
+            # Mostrar resultados de mínimas de forma muy visual
+            if minimas_conseguidas:
+                conseguidas_texto = ", ".join([f"**{c}**" for c in minimas_conseguidas])
+                st.balloons()
+                st.success(f"🎉 ¡TIENES LA MÍNIMA! Tu tiempo limpio te clasifica para el Campeonato de España en: {conseguidas_texto}")
+            else:
+                st.info("🏃‍♂️ Sigue entrenando duro, aún no alcanzas la mínima para campeonatos nacionales con esta marca.")
+            
+            if minimas_cercanas:
+                st.write("**🎯 Objetivos a tiro (Mínimas más cercanas):**")
+                for cat, dif, m_min in sorted(minimas_cercanas, key=lambda x: x[1]):
+                    st.write(f"• A tan solo **{dif:.2f}s** de la mínima **{cat}** ({m_min:.2f}s).")
+
+            st.markdown("---")
+            
+            # 3. NUEVA FUNCIÓN OPTIMIZADA: Proyector de Marcas Avanzado (En Rango)
+            st.subheader("🎯 Proyector de Marcas (Tu Ventana de Potencial)")
+            st.write("Dependiendo de si eres un atleta más *Explosivo* (mejor salida) o más *Resistente* (mejor final), tu potencial estimado se encuentra en estos rangos:")
+            
+            proyecciones_rango = {}
             if distancia == "60m":
-                t_60 = tiempo_neutral
-                t_100 = t_60 * 1.53 if genero == "Hombre" else t_60 * 1.54
-                t_200 = t_100 * 2.01 if genero == "Hombre" else t_100 * 2.03
-                proyecciones["100m"] = t_100
-                proyecciones["200m"] = t_200
-            elif distancia == "100m":
-                t_100 = tiempo_neutral
-                t_60 = t_100 / 1.53 if genero == "Hombre" else t_100 / 1.54
-                t_200 = t_100 * 2.01 if genero == "Hombre" else t_100 * 2.03
-                proyecciones["60m"] = t_60
-                proyecciones["200m"] = t_200
-            elif distancia == "200m":
-                t_200 = tiempo_neutral
-                t_100 = t_200 / 2.01 if genero == "Hombre" else t_200 / 2.03
-                t_60 = t_100 / 1.53 if genero == "Hombre" else t_100 / 1.54
-                proyecciones["60m"] = t_60
-                proyecciones["100m"] = t_100
+                # Proyección a 100m
+                f_min_100, f_max_100 = (1.50, 1.57) if genero == "Hombre" else (1.51, 1.58)
+                # Proyección a 200m
+                f_min_200, f_max_200 = (2.95, 3.20) if genero == "Hombre" else (3.00, 3.25)
                 
-            # Mostrar las proyecciones en tarjetas visuales
-            p_cols = st.columns(len(proyecciones))
-            for idx, (dist, t_est) in enumerate(proyecciones.items()):
-                p_cols[idx].metric(label=f"Potencial en {dist}", value=f"{t_est:.2f}s")
+                proyecciones_rango["100m"] = (tiempo_neutral * f_min_100, tiempo_neutral * f_max_100)
+                proyecciones_rango["200m"] = (tiempo_neutral * f_min_200, tiempo_neutral * f_max_200)
+                
+            elif distancia == "100m":
+                # Proyección a 60m
+                f_min_60, f_max_60 = (1.57, 1.50) if genero == "Hombre" else (1.58, 1.51)
+                # Proyección a 200m
+                f_min_200, f_max_200 = (1.96, 2.06) if genero == "Hombre" else (1.98, 2.08)
+                
+                proyecciones_rango["60m"] = (tiempo_neutral / f_min_60, tiempo_neutral / f_max_60)
+                proyecciones_rango["200m"] = (tiempo_neutral * f_min_200, tiempo_neutral * f_max_200)
+                
+            elif distancia == "200m":
+                # Proyección a 100m
+                f_min_100, f_max_100 = (2.06, 1.96) if genero == "Hombre" else (2.08, 1.98)
+                # Proyección a 60m
+                f_min_60, f_max_60 = (3.20, 2.95) if genero == "Hombre" else (3.25, 3.00)
+                
+                proyecciones_rango["100m"] = (tiempo_neutral / f_min_100, tiempo_neutral / f_max_100)
+                proyecciones_rango["60m"] = (tiempo_neutral / f_min_60, tiempo_neutral / f_max_60)
+                
+            # Mostrar las proyecciones en columnas con el formato de rango
+            p_cols = st.columns(len(proyecciones_rango))
+            for idx, (dist, (t_min, t_max)) in enumerate(proyecciones_rango.items()):
+                p_cols[idx].metric(
+                    label=f"Rango Estimado en {dist}", 
+                    value=f"{t_min:.2f}s - {t_max:.2f}s",
+                    help="El tiempo más rápido corresponde a un perfil optimizado para la distancia; el más lento a uno menos adaptado."
+                )
                 
             st.markdown("---")
             
-            # 3. Tabla de Simulación Automática
+            # 4. Tabla de Simulación Automática
             st.subheader("📊 Tabla de Simulación de Vientos")
             st.write("Esto es lo que habrías registrado hoy si las condiciones climáticas hubieran sido diferentes:")
             
@@ -111,22 +168,32 @@ with tab1:
             
             st.markdown("---")
             
-            # 4. MODIFICADO: Cuadro "Copiar para WhatsApp" con Proyecciones incluidas
+            # 5. Cuadro "Copiar para WhatsApp" con Rangos y Mínimas
             st.subheader("📱 Compartir con el Equipo")
             st.write("Haz clic en el botón de copiar (icono de dos cuadraditos) para pegarlo en WhatsApp:")
             
-            # Generar el bloque de texto de las proyecciones dinámicamente
+            # Generar bloque de texto dinámico para WhatsApp de proyecciones en rango
             texto_proyecciones_wa = ""
-            for dist, t_est in proyecciones.items():
-                texto_proyecciones_wa += f"🎯 *Potencial {dist}:* {t_est:.2f}s\n"
+            for dist, (t_min, t_max) in proyecciones_rango.items():
+                texto_proyecciones_wa += f"🎯 *Rango {dist}:* {t_min:.2f}s a {t_max:.2f}s\n"
             
+            # Generar bloque de texto dinámico de mínimas
+            texto_minimas_wa = "❌ Ninguna actualmente"
+            if minimas_conseguidas:
+                texto_minimas_wa = "✅ " + ", ".join(minimas_conseguidas)
+            elif minimas_cercanas:
+                mas_cercana = sorted(minimas_cercanas, key=lambda x: x[1])[0]
+                texto_minimas_wa = f"🚀 Rozando {mas_cercana[0]} (a {mas_cercana[1]:.2f}s)"
+
             texto_whatsapp = (
                 f"🏃‍♂️ *¡Resultado de la Calculadora de Viento!*\n"
                 f"🏁 *Prueba:* {distancia} ({genero})\n"
                 f"⏱️ *Tiempo Real:* {tiempo_real:.2f}s (Viento: {viento:+} m/s)\n"
                 f"✨ *Tiempo Neutral (0.0):* {tiempo_neutral:.2f}s\n"
                 f"🚦 *Estado:* {estado_legal}\n\n"
-                f"🔮 *Proyecciones Estimadas:*\n"
+                f"🎖️ *Mínimas de España RFEA:*\n"
+                f"{texto_minimas_wa}\n\n"
+                f"🔮 *Ventana de Potencial Estimado:*\n"
                 f"{texto_proyecciones_wa}"
             )
             st.code(texto_whatsapp, language="text")
