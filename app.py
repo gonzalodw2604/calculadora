@@ -5,19 +5,18 @@ import pandas as pd
 st.set_page_config(page_title="Calculadora de Viento PRO", page_icon="🏃‍♂️", layout="centered")
 
 # Base de datos interna con marcas mínimas oficiales de referencia (RFEA aproximadas PC/AL)
-# ¡Actualizada con categorías Máster de 35 a 55 años!
 MINIMAS_DB = {
     "Hombre": {
-        "60m": {"Absoluto": 6.85, "Sub23": 6.95, "Sub20": 7.05, "Sub18": 7.15, "Sub16": 7.35, "Máster 35": 7.30, "Máster 40": 7.55, "Máster 45": 7.60, "Máster 50": 7.70, "Máster 55": 8.20},
-        "100m": {"Absoluto": 10.65, "Sub23": 10.90, "Sub20": 11.15, "Sub18": 11.35, "Sub16": 11.60, "Máster 35": 11.50, "Máster 40": 11.90, "Máster 45": 12.00, "Máster 50": 12.50, "Máster 55": 13.00},
-        "200m": {"Absoluto": 21.60, "Sub23": 22.10, "Sub20": 22.55, "Sub18": 22.95, "Máster 35": 23.20, "Máster 40": 24.50, "Máster 45": 24.50, "Máster 50": 25.50, "Máster 55": 26.50},
-        "400m": {"Absoluto": 48.00, "Sub23": 48.90, "Sub20": 49.75, "Sub18": 50.95, "Máster 35": 52.00, "Máster 40": 54.00, "Máster 45": 55.00, "Máster 50": 57.50, "Máster 55": 59.80}
+        "60m": {"Absoluto": 6.85, "Sub23": 6.95, "Sub20": 7.05, "Sub18": 7.15, "Sub16": 7.35},
+        "100m": {"Absoluto": 10.65, "Sub23": 10.90, "Sub20": 11.15, "Sub18": 11.35, "Sub16": 11.60},
+        "200m": {"Absoluto": 21.60, "Sub23": 22.10, "Sub20": 22.55, "Sub18": 22.95},
+        "400m": {"Absoluto": 48.00, "Sub23": 48.90, "Sub20": 49.75, "Sub18": 50.95} # Sub16 suele correr 300m
     },
     "Mujer": {
-        "60m": {"Absoluto": 7.65, "Sub23": 7.85, "Sub20": 7.95, "Sub18": 8.05, "Sub16": 8.20, "Máster 35": 8.70, "Máster 40": 8.80, "Máster 45": 8.90, "Máster 50": 9.10, "Máster 55": 9.50},
-        "100m": {"Absoluto": 11.95, "Sub23": 12.30, "Sub20": 12.60, "Sub18": 12.75, "Sub16": 12.90, "Máster 35": 14.00, "Máster 40": 14.00, "Máster 45": 14.00, "Máster 50": 14.70, "Máster 55": 15.40},
-        "200m": {"Absoluto": 24.45, "Sub23": 25.30, "Sub20": 25.80, "Sub18": 26.30, "Máster 35": 28.30, "Máster 40": 28.50, "Máster 45": 29.00, "Máster 50": 29.80, "Máster 55": 32.00},
-        "400m": {"Absoluto": 55.00, "Sub23": 56.80, "Sub20": 57.75, "Sub18": 59.25, "Máster 35": 62.50, "Máster 40": 64.00, "Máster 45": 64.00, "Máster 50": 68.00, "Máster 55": 69.00}
+        "60m": {"Absoluto": 7.65, "Sub23": 7.85, "Sub20": 7.95, "Sub18": 8.05, "Sub16": 8.20},
+        "100m": {"Absoluto": 11.95, "Sub23": 12.30, "Sub20": 12.60, "Sub18": 12.75, "Sub16": 12.90},
+        "200m": {"Absoluto": 24.45, "Sub23": 25.30, "Sub20": 25.80, "Sub18": 26.30},
+        "400m": {"Absoluto": 55.00, "Sub23": 56.80, "Sub20": 57.75, "Sub18": 59.25} # Sub16 suele correr 300m
     }
 }
 
@@ -60,9 +59,8 @@ with tab1:
             
         genero = st.radio("Género del atleta:", ["Hombre", "Mujer"], index=None, horizontal=True, key="ind_gen")
 
-    # SELECTOR: Elección de categoría/campeonato objetivo (Con opciones Máster añadidas)
-    lista_categorias = ["Absoluto", "Sub23", "Sub20", "Sub18", "Sub16", "Máster 35", "Máster 40", "Máster 45", "Máster 50", "Máster 55"]
-    categoria_elegida = st.selectbox("🏆 Selecciona tu categoría (Campeonato de España):", lista_categorias, index=None, placeholder="Elige tu campeonato destino...")
+    # SELECTOR: Elección de categoría/campeonato objetivo
+    categoria_elegida = st.selectbox("🏆 Selecciona tu categoría (Campeonato de España):", ["Absoluto", "Sub23", "Sub20", "Sub18", "Sub16"], index=None, placeholder="Elige tu campeonato destino...")
 
     # Botón de ejecución
     if st.button("🚀 Calcular Rendimiento Completo", type="primary", key="btn_individual"):
@@ -185,3 +183,88 @@ with tab1:
             
             df_sim = pd.DataFrame(filas_simulacion)
             st.dataframe(df_sim, use_container_width=True, hide_index=True)
+            
+            st.markdown("---")
+            
+            # 5. Cuadro "Copiar para WhatsApp"
+            st.subheader("📱 Compartir con el Equipo")
+            st.write("Haz clic en el botón de copiar (icono de dos cuadraditos) para pegarlo en WhatsApp:")
+            
+            texto_proyecciones_wa = ""
+            for dist, (t_min, t_max) in proyecciones_rango.items():
+                texto_proyecciones_wa += f"🎯 *Rango {dist}:* {t_min:.2f}s a {t_max:.2f}s\n"
+
+            texto_whatsapp = (
+                f"🏃‍♂️ *¡Resultado de la Calculadora de Viento!*\n"
+                f"🏁 *Prueba:* {distancia} ({genero})\n"
+                f"⏱️ *Tiempo Real:* {tiempo_real:.2f}s" + (f" (Viento: {viento:+} m/s)\n" if distancia != "400m" else "\n") +
+                f"✨ *Tiempo Neutral:* {tiempo_neutral:.2f}s\n"
+                f"🚦 *Estado:* {estado_legal}\n\n"
+                f"🏆 *Estatus de Mínima:*\n"
+                f"{texto_minimas_wa}\n\n"
+            )
+            if texto_proyecciones_wa:
+                texto_whatsapp += f"🔮 *Ventana de Potencial Estimado:*\n{texto_proyecciones_wa}"
+                
+            st.code(texto_whatsapp, language="text")
+
+
+# ==========================================
+# PESTAÑA 2: COMPARADOR CARA A CARA (DUELO VIRTUAL)
+# ==========================================
+with tab2:
+    st.header("⚔️ Duelo Virtual de Atletas")
+    st.write("¿Quién ha sido realmente más rápido? Compara a dos atletas que corrieron en series diferentes con vientos distintos.")
+    
+    duelo_distancia = st.selectbox("Selecciona la distancia del duelo:", ["60m", "100m", "200m", "400m"], index=1)
+    
+    col_at1, col_at2 = st.columns(2)
+    
+    with col_at1:
+        st.markdown("### 🏃‍♂️ Atleta 1")
+        nom1 = st.text_input("Nombre Atleta 1:", value="Atleta A")
+        t1 = st.number_input("Tiempo registrado (s):", value=None, min_value=0.0, step=0.01, placeholder="Ej: 48.50", key="t1")
+        
+        # Corrección de caché para 400m
+        if duelo_distancia == "400m":
+            v1 = st.number_input("Viento medido (m/s):", value=0.0, step=0.1, disabled=True, key="v1_400", help="No aplica en 400m")
+        else:
+            v1 = st.number_input("Viento medido (m/s):", value=None, step=0.1, placeholder="Ej: +1.5", key="v1")
+            
+        g1 = st.radio("Género Atleta 1:", ["Hombre", "Mujer"], index=0, key="g1", horizontal=True)
+        
+    with col_at2:
+        st.markdown("### 🏃‍♀️ Atleta 2")
+        nom2 = st.text_input("Nombre Atleta 2:", value="Atleta B")
+        t2 = st.number_input("Tiempo registrado (s):", value=None, min_value=0.0, step=0.01, placeholder="Ej: 49.10", key="t2")
+        
+        # Corrección de caché para 400m
+        if duelo_distancia == "400m":
+            v2 = st.number_input("Viento medido (m/s):", value=0.0, step=0.1, disabled=True, key="v2_400", help="No aplica en 400m")
+        else:
+            v2 = st.number_input("Viento medido (m/s):", value=None, step=0.1, placeholder="Ej: -0.8", key="v2")
+            
+        g2 = st.radio("Género Atleta 2:", ["Hombre", "Mujer"], index=0, key="g2", horizontal=True)
+
+    if st.button("🔥 ¡Iniciar Duelo Virtual!", type="primary"):
+        if t1 is None or v1 is None or t2 is None or v2 is None:
+            st.error("⚠️ Es obligatorio rellenar los tiempos de ambos atletas para simular el duelo.")
+        else:
+            coef1 = obtener_coeficiente(duelo_distancia, g1)
+            coef2 = obtener_coeficiente(duelo_distancia, g2)
+            
+            n1 = t1 + (v1 * coef1)
+            n2 = t2 + (v2 * coef2)
+            
+            st.markdown("### 🏆 Veredicto del Duelo Virtual")
+            st.write(f"👉 El tiempo ajustado de **{nom1}** equivale a: **{n1:.2f}s**")
+            st.write(f"👉 El tiempo ajustado de **{nom2}** equivale a: **{n2:.2f}s**")
+            
+            if abs(n1 - n2) < 0.001:
+                st.info(f"🤝 **¡Empate técnico absoluto!** En igualdad de condiciones, habrían clavado la misma marca.")
+            elif n1 < n2:
+                diferencia = n2 - n1
+                st.success(f"👑 **¡Ganador Virtual: {nom1}!** Corriendo en las mismas condiciones climáticas, habría aventajado a {nom2} por **{diferencia:.2f}s**.")
+            else:
+                diferencia = n1 - n2
+                st.success(f"👑 **¡Ganador Virtual: {nom2}!** Corriendo en las mismas condiciones climáticas, habría aventajado a {nom1} por **{diferencia:.2f}s**.")
