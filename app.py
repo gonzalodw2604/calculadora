@@ -54,7 +54,7 @@ with tab1:
         if distancia == "400m":
             viento = st.number_input("Viento medido (m/s):", value=0.0, step=0.1, disabled=True, help="En los 400m no se mide el viento reglamentariamente.", key="ind_wind_400")
         else:
-            viento = st.number_input("Viento medido (m/s):", value=None, step=0.1, placeholder="Ej: +2.3 o -1.5", key="ind_wind")
+            viento = st.number_input("Viento medido (m/s):", value=None, step=0.1, placeholder="Ej: 2.3 o -1.5(no usar +)", key="ind_wind")
             
         genero = st.radio("Género del atleta:", ["Hombre", "Mujer"], index=None, horizontal=True, key="ind_gen")
 
