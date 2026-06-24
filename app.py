@@ -4,7 +4,7 @@ import streamlit as st
 st.set_page_config(page_title="Calculadora de Viento para TheBalasTeam", page_icon="🏃‍♂️", layout="centered")
 
 # Título principal de la página web
-st.title("🏃‍♂️ Calculadora de Viento Neutral para TheBalasTeam")
+st.title("🏃‍♂️ Calculadora de Viento Neutral para TheBalasTeam 🏃‍♂️")
 st.write("Introduce los datos de tu carrera para calcular el tiempo equivalente con viento cero (0.0 m/s).")
 
 st.markdown("---")
