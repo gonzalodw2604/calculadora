@@ -15,7 +15,7 @@ def obtener_coeficiente(distancia, genero):
     return 0.0
 
 # Títulos principales de la web
-st.title("🏃‍♂️ Calculadora de Viento Neutral para The Balas Team 🏃‍♀️")
+st.title("🏃‍♂️ Calculadora de Viento Neutral para TheBalasTeam 🏃‍♀️")
 st.write("La herramienta definitiva para el análisis de marcas de velocidad sin influencia del viento.")
 
 # --- CREACIÓN DE LAS PESTAÑAS ---
@@ -60,7 +60,7 @@ with tab1:
             
             st.markdown("---")
             
-            # 2. NUEVA FUNCIÓN: Proyector de Marcas Estimadas (Potencial)
+            # 2. Proyector de Marcas Estimadas (Potencial)
             st.subheader("🎯 Proyector de Marcas (Tu Potencial)")
             st.write("Basado en tu tiempo neutralizado de hoy, este sería tu rendimiento estimado en las otras distancias:")
             
@@ -84,7 +84,7 @@ with tab1:
                 proyecciones["60m"] = t_60
                 proyecciones["100m"] = t_100
                 
-            # Mostrar las proyecciones en tarjetas visuales (metrics)
+            # Mostrar las proyecciones en tarjetas visuales
             p_cols = st.columns(len(proyecciones))
             for idx, (dist, t_est) in enumerate(proyecciones.items()):
                 p_cols[idx].metric(label=f"Potencial en {dist}", value=f"{t_est:.2f}s")
@@ -111,16 +111,23 @@ with tab1:
             
             st.markdown("---")
             
-            # 4. Cuadro "Copiar para WhatsApp"
+            # 4. MODIFICADO: Cuadro "Copiar para WhatsApp" con Proyecciones incluidas
             st.subheader("📱 Compartir con el Equipo")
-            st.write("Haz clic en el botón de copiar (icono de dos cuadraditos arriba a la derecha del recuadro gris) para pegarlo en WhatsApp:")
+            st.write("Haz clic en el botón de copiar (icono de dos cuadraditos) para pegarlo en WhatsApp:")
+            
+            # Generar el bloque de texto de las proyecciones dinámicamente
+            texto_proyecciones_wa = ""
+            for dist, t_est in proyecciones.items():
+                texto_proyecciones_wa += f"🎯 *Potencial {dist}:* {t_est:.2f}s\n"
             
             texto_whatsapp = (
                 f"🏃‍♂️ *¡Resultado de la Calculadora de Viento!*\n"
                 f"🏁 *Prueba:* {distancia} ({genero})\n"
                 f"⏱️ *Tiempo Real:* {tiempo_real:.2f}s (Viento: {viento:+} m/s)\n"
                 f"✨ *Tiempo Neutral (0.0):* {tiempo_neutral:.2f}s\n"
-                f"🚦 *Estado:* {estado_legal}"
+                f"🚦 *Estado:* {estado_legal}\n\n"
+                f"🔮 *Proyecciones Estimadas:*\n"
+                f"{texto_proyecciones_wa}"
             )
             st.code(texto_whatsapp, language="text")
 
