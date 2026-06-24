@@ -18,11 +18,11 @@ def obtener_coeficiente(distancia, genero):
 st.title("🏃‍♂️ Calculadora de Viento Neutral para The Balas Team 🏃‍♀️")
 st.write("La herramienta definitiva para el análisis de marcas de velocidad sin influencia del viento.")
 
-# --- CREACIÓN DE LAS PESTAÑAS (Ahora solo 2) ---
+# --- CREACIÓN DE LAS PESTAÑAS ---
 tab1, tab2 = st.tabs(["📊 Cálculo Individual & Simulador", "⚔️ Duelo Virtual (Cara a Cara)"])
 
 # ==========================================
-# PESTAÑA 1: CÁLCULO INDIVIDUAL + SIMULACIÓN + SEMÁFORO + WHATSAPP
+# PESTAÑA 1: CÁLCULO INDIVIDUAL + SEMÁFORO + SIMULADOR + PROYECTOR + WHATSAPP
 # ==========================================
 with tab1:
     st.header("⚡ Analizar una Marca")
@@ -46,7 +46,7 @@ with tab1:
             
             st.markdown("---")
             
-            # Idea: Semáforo de "Marca Legal"
+            # 1. Semáforo de "Marca Legal"
             st.subheader("🚦 Homologación de la Marca")
             if viento > 2.0:
                 st.warning(f"🟠 **Marca No Homologable:** El viento a favor ({viento:+} m/s) supera el límite legal reglamentario de +2.0 m/s.")
@@ -60,7 +60,38 @@ with tab1:
             
             st.markdown("---")
             
-            # Idea: Tabla de Simulación Automática
+            # 2. NUEVA FUNCIÓN: Proyector de Marcas Estimadas (Potencial)
+            st.subheader("🎯 Proyector de Marcas (Tu Potencial)")
+            st.write("Basado en tu tiempo neutralizado de hoy, este sería tu rendimiento estimado en las otras distancias:")
+            
+            proyecciones = {}
+            if distancia == "60m":
+                t_60 = tiempo_neutral
+                t_100 = t_60 * 1.53 if genero == "Hombre" else t_60 * 1.54
+                t_200 = t_100 * 2.01 if genero == "Hombre" else t_100 * 2.03
+                proyecciones["100m"] = t_100
+                proyecciones["200m"] = t_200
+            elif distancia == "100m":
+                t_100 = tiempo_neutral
+                t_60 = t_100 / 1.53 if genero == "Hombre" else t_100 / 1.54
+                t_200 = t_100 * 2.01 if genero == "Hombre" else t_100 * 2.03
+                proyecciones["60m"] = t_60
+                proyecciones["200m"] = t_200
+            elif distancia == "200m":
+                t_200 = tiempo_neutral
+                t_100 = t_200 / 2.01 if genero == "Hombre" else t_200 / 2.03
+                t_60 = t_100 / 1.53 if genero == "Hombre" else t_100 / 1.54
+                proyecciones["60m"] = t_60
+                proyecciones["100m"] = t_100
+                
+            # Mostrar las proyecciones en tarjetas visuales (metrics)
+            p_cols = st.columns(len(proyecciones))
+            for idx, (dist, t_est) in enumerate(proyecciones.items()):
+                p_cols[idx].metric(label=f"Potencial en {dist}", value=f"{t_est:.2f}s")
+                
+            st.markdown("---")
+            
+            # 3. Tabla de Simulación Automática
             st.subheader("📊 Tabla de Simulación de Vientos")
             st.write("Esto es lo que habrías registrado hoy si las condiciones climáticas hubieran sido diferentes:")
             
@@ -80,7 +111,7 @@ with tab1:
             
             st.markdown("---")
             
-            # Idea: Cuadro "Copiar para WhatsApp"
+            # 4. Cuadro "Copiar para WhatsApp"
             st.subheader("📱 Compartir con el Equipo")
             st.write("Haz clic en el botón de copiar (icono de dos cuadraditos arriba a la derecha del recuadro gris) para pegarlo en WhatsApp:")
             
