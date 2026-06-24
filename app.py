@@ -5,7 +5,6 @@ import pandas as pd
 st.set_page_config(page_title="Calculadora de Viento y Mínimas de España", page_icon="🏃‍♂️", layout="centered")
 
 # Base de datos interna con marcas mínimas oficiales de referencia (RFEA aproximadas PC/AL)
-# ¡Actualizada con categorías Máster de 35 a 55 años!
 MINIMAS_DB = {
     "Hombre": {
        "100m": {"Absoluto": 10.60, "Sub23": 10.75, "Sub20": 10.85, "Sub18": 11.05, "Sub16": 11.45, "M35": 11.31, "M40": 11.70, "M45": 11.85, "M50": 12.04, "M55": 12.42, "M60": 12.93},
