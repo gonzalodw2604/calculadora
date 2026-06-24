@@ -16,6 +16,7 @@ MINIMAS_DB = {
         "100m": {"Absoluto": 11.80, "Sub23": 12.10, "Sub20": 12.30, "Sub18": 12.30, "Sub16": 12.55, "F35": 13.08, "F40": 13.49, "F45": 13.76, "F50": 13.98, "F55": 14.67, "F60": 15.10},
         "200m": {"Absoluto": 24.25, "Sub23": 25.00, "Sub20": 25.25, "Sub18": 25.25, "F35": 26.42, "F40": 27.95, "F45": 28.56, "F50": 28.60, "F55":
 }
+    }
 
 def obtener_coeficiente(distancia, genero):
     # Nota: El viento afecta menos al 400m por la curva, se usa un coeficiente reducido
